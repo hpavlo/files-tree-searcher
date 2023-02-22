@@ -3,10 +3,10 @@ package org.example;
 import java.io.File;
 import java.util.Stack;
 
-public class Main {
+public class FileSearch {
     public static void main(String[] args) {
         if (args.length < 3) {
-            System.out.println("Usage: java FileSearch <rootPath> <depth> <mask>");
+            System.out.println("Usage: java -jar <file>.jar <rootPath> <depth> <mask>");
             return;
         }
 
