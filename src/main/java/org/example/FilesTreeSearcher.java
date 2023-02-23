@@ -18,21 +18,23 @@ public class FilesTreeSearcher {
             File current = stack.pop();
             int currentDepth = getDepth(new File(rootPath), current);
             if (current.isDirectory() && currentDepth < depth) {
-                File[] files = current.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isDirectory()) {
-                            stack.push(file);
-                        } else {
-                            if (file.getName().contains(mask)) {
-                                queue.add(() -> System.out.println(file.getAbsolutePath()));
-                            }
-                        }
-                    }
-                }
+                fileProcessing(current, mask);
             }
         }
         queue.add(() -> System.exit(0));
+    }
+
+    private void fileProcessing(File currentFile, String mask) {
+        File[] files = currentFile.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    stack.push(file);
+                } else if (file.getName().contains(mask)) {
+                    queue.add(() -> System.out.println(file.getAbsolutePath()));
+                }
+            }
+        }
     }
 
     private int getDepth(File root, File dir) {
