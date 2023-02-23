@@ -2,21 +2,18 @@ package org.example;
 
 import java.io.File;
 import java.util.Stack;
+import java.util.concurrent.BlockingQueue;
 
-public class FileSearch {
-    public static void main(String[] args) {
-        if (args.length < 3) {
-            System.out.println("Usage: java -jar <file>.jar <rootPath> <depth> <mask>");
-            return;
-        }
+public class FilesTreeSearcher {
+    private final BlockingQueue<Runnable> queue;
+    private final Stack<File> stack = new Stack<>();
 
-        String rootPath = args[0];
-        int depth = Integer.parseInt(args[1]);
-        String mask = args[2];
+    public FilesTreeSearcher(BlockingQueue<Runnable> queue) {
+        this.queue = queue;
+    }
 
-        Stack<File> stack = new Stack<>();
+    public void search(String rootPath, int depth, String mask) {
         stack.push(new File(rootPath));
-
         while (!stack.isEmpty()) {
             File current = stack.pop();
             int currentDepth = getDepth(new File(rootPath), current);
@@ -28,16 +25,17 @@ public class FileSearch {
                             stack.push(file);
                         } else {
                             if (file.getName().contains(mask)) {
-                                System.out.println(file.getAbsolutePath());
+                                queue.add(() -> System.out.println(file.getAbsolutePath()));
                             }
                         }
                     }
                 }
             }
         }
+        queue.add(() -> System.exit(0));
     }
 
-    private static int getDepth(File root, File dir) {
+    private int getDepth(File root, File dir) {
         int depth = 0;
         while (!dir.equals(root)) {
             dir = dir.getParentFile();
