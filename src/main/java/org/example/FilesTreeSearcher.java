@@ -1,37 +1,48 @@
 package org.example;
 
 import java.io.File;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class FilesTreeSearcher {
-    private final BlockingQueue<Runnable> queue;
-    private final Stack<File> stack = new Stack<>();
+public class FilesTreeSearcher implements Runnable {
+    private final BlockingQueue<UserRequest> requestsQueue = new LinkedBlockingQueue<>();
+    private final File rootFolder;
 
-    public FilesTreeSearcher(BlockingQueue<Runnable> queue) {
-        this.queue = queue;
+    public FilesTreeSearcher(String rootPath) {
+        rootFolder = new File(rootPath);
     }
 
-    public void search(String rootPath, int depth, String mask) {
-        stack.push(new File(rootPath));
-        while (!stack.isEmpty()) {
-            File current = stack.pop();
-            int currentDepth = getDepth(new File(rootPath), current);
-            if (current.isDirectory() && currentDepth < depth) {
-                fileProcessing(current, mask);
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                UserRequest request = requestsQueue.take();
+                File current = request.getFolder();
+                int currentDepth = getDepth(rootFolder, current);
+                if (current.isDirectory() && currentDepth < request.getDepth()) {
+                    fileProcessing(current, request);
+                }
+                if (!request.isStackEmpty() && request.isUserActive()) {
+                    requestsQueue.add(request);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
-        queue.add(() -> System.exit(0));
     }
 
-    private void fileProcessing(File currentFile, String mask) {
+    public BlockingQueue<UserRequest> getRequestsQueue() {
+        return requestsQueue;
+    }
+
+    private void fileProcessing(File currentFile, UserRequest request) {
         File[] files = currentFile.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    stack.push(file);
-                } else if (file.getName().contains(mask)) {
-                    queue.add(() -> System.out.println(file.getAbsolutePath()));
+                    request.addFolder(file);
+                } else if (file.getName().contains(request.getMask())) {
+                    request.printFile(file);
                 }
             }
         }
