@@ -26,3 +26,5 @@ If several users connect to the server, the program will be able to search for e
 4. Start the program: `java -jar <file>.jar <rootPath> <port>`, where *file* - compiled jar file, *rootPath* - root path for searching, *port* - port for the telnet server
 5. Now we can run our telnet client and connect it to `127.0.0.1` with the port
 6. Enter a command in format: `<depth> <mask>`, where *depth* - file search depth, *mask* - mask for searching files by name
+
+To start the program immediately, you can download [build](https://github.com/pavlogook/files-tree-searcher/releases/tag/build) and execute commands from the 4th point
